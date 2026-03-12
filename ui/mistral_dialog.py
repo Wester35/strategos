@@ -1,5 +1,6 @@
 import os
 
+from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import (
     QDialog,
     QVBoxLayout,
@@ -26,22 +27,38 @@ class MistralDialog(QDialog):
         self.worker = None
         self.init_ui()
 
+
     def init_ui(self):
         self.setWindowTitle("Mistral AI - Анализ документа")
         self.setGeometry(200, 200, 800, 600)
 
         layout = QVBoxLayout()
 
+        # Палитра для системных цветов
+        palette = self.palette()
+        window_bg = palette.color(QPalette.Window)
+        text_color = palette.color(QPalette.WindowText)
+        base_color = palette.color(QPalette.Base)
+        button_bg = palette.color(QPalette.Button)
+        button_text = palette.color(QPalette.ButtonText)
+
         # Поле для ввода API ключа
         key_layout = QHBoxLayout()
         key_label = QLabel("API ключ Mistral:")
+        key_label.setStyleSheet(f"color: {text_color.name()};")
+
         self.key_input = QTextEdit()
         self.key_input.setMaximumHeight(60)
         self.key_input.setPlaceholderText("Введите ваш Mistral API ключ...")
+        self.key_input.setStyleSheet(f"background-color: {base_color.name()}; color: {text_color.name()};")
 
         # Кнопка сохранения ключа
         self.save_key_btn = QPushButton("💾 Сохранить ключ")
         self.save_key_btn.clicked.connect(self.save_api_key)
+        self.save_key_btn.setStyleSheet(f"""
+            background-color: {button_bg.name()};
+            color: {button_text.name()};
+        """)
 
         key_layout.addWidget(key_label)
         key_layout.addWidget(self.key_input)
@@ -49,28 +66,30 @@ class MistralDialog(QDialog):
 
         # Поле для вопроса
         question_label = QLabel("Ваш вопрос к ИИ:")
+        question_label.setStyleSheet(f"color: {text_color.name()};")
+
         self.question_input = QTextEdit()
         self.question_input.setMaximumHeight(80)
         self.question_input.setPlaceholderText(
-            "Например: Какие основные риски в этом плане? Или: Дай оценку стратегии...")
+            "Например: Какие основные риски в этом плане? Или: Дай оценку стратегии..."
+        )
+        self.question_input.setStyleSheet(f"background-color: {base_color.name()}; color: {text_color.name()};")
 
         # Кнопка отправки
         self.ask_btn = QPushButton("🤖 Спросить Mistral AI")
         self.ask_btn.clicked.connect(self.ask_mistral)
         self.ask_btn.setEnabled(False)
-        self.ask_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #4a90e2;
-                color: white;
-                font-weight: bold;
-                padding: 10px;
-                font-size: 14px;
-            }
+        self.ask_btn.setStyleSheet(f"""
+            background-color: {button_bg.name()};
+            color: {button_text.name()};
+            font-weight: bold;
+            padding: 10px;
+            font-size: 14px;
         """)
 
         # Статус
         self.status_label = QLabel("Введите API ключ для начала работы")
-        self.status_label.setStyleSheet("color: #666;")
+        self.status_label.setStyleSheet(f"color: {text_color.name()};")
 
         # Прогресс бар
         self.progress_bar = QProgressBar()
@@ -78,16 +97,17 @@ class MistralDialog(QDialog):
 
         # Область для ответа
         response_label = QLabel("Ответ Mistral AI:")
+        response_label.setStyleSheet(f"color: {text_color.name()};")
+
         self.response_text = QTextBrowser()
         self.response_text.setOpenExternalLinks(True)
-        self.response_text.setStyleSheet("""
-            QTextBrowser {
-                background-color: #f8f9fa;
-                border: 1px solid #ddd;
-                border-radius: 5px;
-                padding: 10px;
-                font-family: Arial;
-            }
+        self.response_text.setStyleSheet(f"""
+            background-color: {base_color.name()};
+            color: {text_color.name()};
+            border: 1px solid {button_bg.name()};
+            border-radius: 5px;
+            padding: 10px;
+            font-family: Arial;
         """)
 
         # Кнопки диалога
