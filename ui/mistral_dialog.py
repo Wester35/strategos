@@ -1,10 +1,16 @@
 import os
 
 from PySide6.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout,
-    QLabel, QTextEdit, QPushButton,
-    QProgressBar, QTextBrowser,
-    QDialogButtonBox, QMessageBox
+    QDialog,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLabel,
+    QTextEdit,
+    QPushButton,
+    QProgressBar,
+    QTextBrowser,
+    QDialogButtonBox,
+    QMessageBox
 )
 
 from workers.mistral_worker import MistralWorker

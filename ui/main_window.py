@@ -160,7 +160,22 @@ class MainWindow(QMainWindow):
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
         self.status_bar.showMessage("Готов к работе")
-
+        self.text_edit.setStyleSheet("""
+            background-color: #ffffff;
+            color: #000000;
+        """)
+        self.json_edit.setStyleSheet("""
+            background-color: #ffffff;
+            color: #000000;
+        """)
+        self.metrics_text.setStyleSheet("""
+            background-color: #ffffff;
+            color: #000000;
+        """)
+        self.tree_view.setStyleSheet("""
+            background-color: #ffffff;
+            color: #000000;
+        """)
         # Применяем стили
         self.apply_styles()
 
