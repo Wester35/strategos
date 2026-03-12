@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
 )
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QFont
+from PySide6.QtGui import QFont, QPalette
 
 from workers.parser_worker import ParserWorker
 from ui.mistral_dialog import MistralDialog
@@ -23,15 +23,24 @@ class MainWindow(QMainWindow):
         self.mistral_dialog = None
         self.init_ui()
 
+
     def init_ui(self):
         self.setWindowTitle("Стратегический парсер документов")
-        self.setGeometry(100, 100, 1200, 800)
+        self.setGeometry(100, 100, 1000, 600)
+
+        # Получаем системные цвета
+        palette = self.palette()
+        window_bg = palette.color(QPalette.Window)
+        text_color = palette.color(QPalette.WindowText)
+        base_color = palette.color(QPalette.Base)
+        button_bg = palette.color(QPalette.Button)
+        button_text = palette.color(QPalette.ButtonText)
+        highlight_color = palette.color(QPalette.Highlight)
 
         # Центральный виджет
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
 
-        # Главный layout
         main_layout = QVBoxLayout(central_widget)
 
         # Верхняя панель с кнопками
@@ -40,40 +49,56 @@ class MainWindow(QMainWindow):
         top_layout.setContentsMargins(0, 0, 0, 0)
 
         # Кнопки
+        def style_btn(btn, highlight=False):
+            palette = self.palette()
+            button_bg = palette.color(QPalette.Button)
+            button_text = palette.color(QPalette.ButtonText)
+            highlight_color = palette.color(QPalette.Highlight)
+
+            # Если кнопка "выделена" (active)
+            bg_color = highlight_color.name() if highlight else button_bg.name()
+
+            btn.setStyleSheet(f"""
+                QPushButton {{
+                    background-color: {bg_color};
+                    color: {button_text.name()};
+                    border: none;
+                    border-radius: 5px;
+                    padding: 8px 15px;
+                    font-weight: bold;
+                }}
+                QPushButton:hover {{
+                    background-color: {highlight_color.lighter(130).name()};
+                }}
+                QPushButton:disabled {{
+                    background-color: #cccccc;
+                    color: #666666;
+                }}
+            """)
+
         self.btn_open = QPushButton("📂 Открыть документ")
         self.btn_open.clicked.connect(self.open_document)
-        self.btn_open.setFixedHeight(40)
+        style_btn(self.btn_open, highlight=True)
 
         self.btn_save = QPushButton("💾 Сохранить JSON")
         self.btn_save.clicked.connect(self.save_json)
         self.btn_save.setEnabled(False)
-        self.btn_save.setFixedHeight(40)
+        style_btn(self.btn_save)
 
         self.btn_save_txt = QPushButton("📝 Сохранить текст")
         self.btn_save_txt.clicked.connect(self.save_text)
         self.btn_save_txt.setEnabled(False)
-        self.btn_save_txt.setFixedHeight(40)
+        style_btn(self.btn_save_txt)
 
         self.btn_export = QPushButton("📊 Экспорт отчет")
         self.btn_export.clicked.connect(self.export_report)
         self.btn_export.setEnabled(False)
-        self.btn_export.setFixedHeight(40)
+        style_btn(self.btn_export)
 
-        # Новая кнопка для Mistral AI
         self.btn_mistral = QPushButton("🤖 Спросить Mistral AI")
         self.btn_mistral.clicked.connect(self.ask_mistral)
         self.btn_mistral.setEnabled(False)
-        self.btn_mistral.setFixedHeight(40)
-        self.btn_mistral.setStyleSheet("""
-            QPushButton {
-                background-color: #ff6b6b;
-                color: white;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #ff5252;
-            }
-        """)
+        style_btn(self.btn_mistral, highlight=True)
 
         top_layout.addWidget(self.btn_open)
         top_layout.addWidget(self.btn_save)
@@ -84,13 +109,12 @@ class MainWindow(QMainWindow):
 
         # Информационная метка
         self.info_label = QLabel("Выберите документ для анализа")
-        self.info_label.setStyleSheet("color: #666; padding: 5px;")
+        self.info_label.setStyleSheet(f"color: {text_color.name()}; padding: 5px;")
 
         # Прогресс бар
         self.progress_bar = QProgressBar()
         self.progress_bar.setVisible(False)
 
-        # Добавляем на главный layout
         main_layout.addWidget(top_panel)
         main_layout.addWidget(self.info_label)
         main_layout.addWidget(self.progress_bar)
@@ -98,58 +122,57 @@ class MainWindow(QMainWindow):
         # Разделитель для контента
         splitter = QSplitter(Qt.Horizontal)
 
-        # Левая панель - структура документа
+        # Левая панель
         left_panel = QWidget()
         left_layout = QVBoxLayout(left_panel)
         left_layout.setContentsMargins(0, 0, 0, 0)
 
         left_label = QLabel("📋 Информация")
         left_label.setFont(QFont("Arial", 12, QFont.Bold))
+        left_label.setStyleSheet(f"color: {text_color.name()};")
 
         self.tree_view = QTextEdit()
         self.tree_view.setReadOnly(True)
         self.tree_view.setMaximumWidth(300)
+        self.tree_view.setStyleSheet(f"background-color: {base_color.name()}; color: {text_color.name()};")
 
         left_layout.addWidget(left_label)
         left_layout.addWidget(self.tree_view)
 
-        # Правая панель - содержимое с вкладками
+        # Правая панель с вкладками
         right_panel = QTabWidget()
+
+        def style_textedit(te):
+            te.setReadOnly(True)
+            te.setStyleSheet(f"background-color: {base_color.name()}; color: {text_color.name()};")
 
         # Вкладка с текстом
         text_widget = QWidget()
         text_layout = QVBoxLayout(text_widget)
-
         self.text_edit = QTextEdit()
-        self.text_edit.setReadOnly(True)
         self.text_edit.setFont(QFont("Courier New", 10))
+        style_textedit(self.text_edit)
         text_layout.addWidget(self.text_edit)
-
         right_panel.addTab(text_widget, "📄 Текст документа")
 
         # Вкладка с JSON
         json_widget = QWidget()
         json_layout = QVBoxLayout(json_widget)
-
         self.json_edit = QTextEdit()
-        self.json_edit.setReadOnly(True)
         self.json_edit.setFont(QFont("Courier New", 10))
+        style_textedit(self.json_edit)
         json_layout.addWidget(self.json_edit)
-
         right_panel.addTab(json_widget, "🔍 JSON данные")
 
         # Вкладка с метриками
         metrics_widget = QWidget()
         metrics_layout = QVBoxLayout(metrics_widget)
-
         self.metrics_text = QTextEdit()
-        self.metrics_text.setReadOnly(True)
         self.metrics_text.setFont(QFont("Arial", 10))
+        style_textedit(self.metrics_text)
         metrics_layout.addWidget(self.metrics_text)
-
         right_panel.addTab(metrics_widget, "📊 Метрики")
 
-        # Добавляем панели в сплиттер
         splitter.addWidget(left_panel)
         splitter.addWidget(right_panel)
         splitter.setSizes([300, 900])
@@ -161,14 +184,14 @@ class MainWindow(QMainWindow):
         self.setStatusBar(self.status_bar)
         self.status_bar.showMessage("Готов к работе")
 
-        # Применяем стили
-        self.apply_styles()
+        # Фон окна
+        self.setStyleSheet(f"QMainWindow {{ background-color: {window_bg.name()}; }}")
 
     def apply_styles(self):
         self.setStyleSheet("""
-            QMainWindow {
-                background-color: #f5f5f5;
-            }
+            # QMainWindow {
+            #     background-color: #f5f5f5;
+            # }
             QPushButton {
                 background-color: #4a90e2;
                 color: white;
@@ -177,21 +200,21 @@ class MainWindow(QMainWindow):
                 border-radius: 5px;
                 font-weight: bold;
             }
-            QPushButton:hover {
-                background-color: #357abd;
-            }
-            QPushButton:disabled {
-                background-color: #cccccc;
-            }
-            QTextEdit, QTreeView {
-                background-color: white;
-                border: 1px solid #ddd;
-                border-radius: 3px;
-            }
-            QTabWidget::pane {
-                border: 1px solid #ddd;
-                border-radius: 3px;
-            }
+            # QPushButton:hover {
+            #     background-color: #357abd;
+            # }
+            # QPushButton:disabled {
+            #     background-color: #cccccc;
+            # }
+            # QTextEdit, QTreeView {
+            #     background-color: white;
+            #     border: 1px solid #ddd;
+            #     border-radius: 3px;
+            # }
+            # QTabWidget::pane {
+            #     border: 1px solid #ddd;
+            #     border-radius: 3px;
+            # }
         """)
 
     def open_document(self):

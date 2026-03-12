@@ -10,6 +10,7 @@ class MistralWorker(QThread):
 
     def __init__(self, api_key, document_text, question):
         super().__init__()
+
         self.api_key = api_key
         self.document_text = document_text
         self.question = question
@@ -46,10 +47,18 @@ class MistralWorker(QThread):
             self.status_update.emit("Получен ответ от Mistral AI...")
 
             if response and response.choices:
+
                 result = response.choices[0].message.content
+
                 self.response_received.emit(result)
+
             else:
-                self.error_occurred.emit("Не удалось получить ответ от Mistral AI")
+                self.error_occurred.emit(
+                    "Не удалось получить ответ от Mistral AI"
+                )
 
         except Exception as e:
-            self.error_occurred.emit(f"Ошибка при обращении к Mistral AI: {str(e)}")
+
+            self.error_occurred.emit(
+                f"Ошибка при обращении к Mistral AI: {str(e)}"
+            )
